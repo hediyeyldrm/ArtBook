@@ -21,6 +21,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 
 public class MainActivity2 extends AppCompatActivity {
@@ -105,5 +106,49 @@ public class MainActivity2 extends AppCompatActivity {
 
     public void save(View view) {
 
+        String artName = artNameText.getText().toString();
+        String painterName = painterNameText.getText().toString();
+        String year = yearText.getText().toString();
+
+        Bitmap smallImage = makeSmallerImage(selectedImage,300);
+
+
+        //görseli alıp veriye çevirme işlemleri
+        //ByteArrayOutputStream sınıfını kullanarak yapılır.
+        //görselin şeklini , kalitesini belirtip çevirme yapılır.
+
+
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        smallImage.compress(Bitmap.CompressFormat.PNG, 50, outputStream);
+        byte[] byteArray = outputStream.toByteArray();
+
     }
+
+    //görsellerin küçük olduğuna emin olmak gerekiyor, sqlite ın hata vermemesi için.
+
+    public Bitmap makeSmallerImage (Bitmap image, int maximumSize){
+
+        int width = image.getWidth();
+        int height = image.getHeight();
+
+        float bitmapRatio = (float) width / (float) height ;
+
+        //yatay mı dikey mi olduğu kontrol edilir
+
+        if (bitmapRatio > 1){
+            width = maximumSize;
+            height = (int) (width / bitmapRatio);
+
+        } else {
+            height = maximumSize;
+            width = (int) (height * bitmapRatio);
+
+        }
+
+        return Bitmap.createScaledBitmap(image, width, height, true);
+
+
+    }
+
+
 }
