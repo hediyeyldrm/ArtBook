@@ -10,6 +10,8 @@ import android.Manifest;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.database.sqlite.SQLiteDatabase;
+import android.database.sqlite.SQLiteStatement;
 import android.graphics.Bitmap;
 import android.graphics.ImageDecoder;
 import android.net.Uri;
@@ -110,7 +112,7 @@ public class MainActivity2 extends AppCompatActivity {
         String painterName = painterNameText.getText().toString();
         String year = yearText.getText().toString();
 
-        Bitmap smallImage = makeSmallerImage(selectedImage,300);
+        Bitmap smallImage = makeSmallerImage(selectedImage, 300);
 
 
         //görseli alıp veriye çevirme işlemleri
@@ -122,20 +124,39 @@ public class MainActivity2 extends AppCompatActivity {
         smallImage.compress(Bitmap.CompressFormat.PNG, 50, outputStream);
         byte[] byteArray = outputStream.toByteArray();
 
+        try {
+            //veritabanı oluşturma ve tablo oluşturma
+            SQLiteDatabase database = this.openOrCreateDatabase("Arts", MODE_PRIVATE, null);
+            database.execSQL("CREATE TABLE IF NOT EXISTS arts (id INTEGER PRIMARY KEY, artname VARCHAR, paintername VARCHAR, year VARCHAR, image BLOB)");
+            String sqlString = "INSERT INTO arts (artname, paintername, year, image) VALUES (?, ?, ?, ?)";
+            SQLiteStatement sqLiteStatement = database.compileStatement(sqlString);
+            sqLiteStatement.bindString(1, artName);
+            sqLiteStatement.bindString(2, painterName);
+            sqLiteStatement.bindString(3, year);
+            sqLiteStatement.bindBlob(4, byteArray);
+            sqLiteStatement.execute();
+
+
+        } catch (Exception e) {
+
+        }
+
+        finish();
+
     }
 
     //görsellerin küçük olduğuna emin olmak gerekiyor, sqlite ın hata vermemesi için.
 
-    public Bitmap makeSmallerImage (Bitmap image, int maximumSize){
+    public Bitmap makeSmallerImage(Bitmap image, int maximumSize) {
 
         int width = image.getWidth();
         int height = image.getHeight();
 
-        float bitmapRatio = (float) width / (float) height ;
+        float bitmapRatio = (float) width / (float) height;
 
         //yatay mı dikey mi olduğu kontrol edilir
 
-        if (bitmapRatio > 1){
+        if (bitmapRatio > 1) {
             width = maximumSize;
             height = (int) (width / bitmapRatio);
 
